@@ -1,2 +1,8 @@
-package com.example.userservice.exceptions;public class IncorrectPasswordException {
+package com.example.userservice.exceptions;
+
+public class IncorrectPasswordException extends Exception {
+
+    public IncorrectPasswordException(String message) {
+        super(message);
+    }
 }

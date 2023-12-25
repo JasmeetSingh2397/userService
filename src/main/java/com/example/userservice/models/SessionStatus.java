@@ -1,2 +1,12 @@
-package com.example.userservice.models;public class SessionStatus {
+package com.example.userservice.models;
+
+import java.awt.dnd.InvalidDnDOperationException;
+
+public enum SessionStatus {
+    ACTIVE,
+    INVALID,
+    EXPIRED,
+    LOGGED_OUT,
+
+
 }
