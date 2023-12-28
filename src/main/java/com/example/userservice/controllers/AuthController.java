@@ -1,10 +1,7 @@
 package com.example.userservice.controllers;
 
 import com.example.userservice.dtos.*;
-import com.example.userservice.exceptions.IncorrectPasswordException;
-import com.example.userservice.exceptions.InvalidSessionException;
-import com.example.userservice.exceptions.UserAlreadyExistsException;
-import com.example.userservice.exceptions.UserNotFoundException;
+import com.example.userservice.exceptions.*;
 import com.example.userservice.models.SessionStatus;
 import com.example.userservice.models.User;
 import com.example.userservice.services.AuthService;
@@ -18,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -39,9 +38,16 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<SessionStatus> validate(@RequestBody ValidateTokenRequestDto validateTokenRequestDto ){
-        SessionStatus sessionStatus= authService.validate(validateTokenRequestDto.getToken(), validateTokenRequestDto.getUserId());
-        return new ResponseEntity<>(sessionStatus,HttpStatus.OK);
+    public ResponseEntity<ValidateTokenResponseDto> validate(@RequestBody ValidateTokenRequestDto validateTokenRequestDto ){
+        Optional<UserDto> optionalUserDto = authService.validate(validateTokenRequestDto.getToken(), validateTokenRequestDto.getUserId());
+        ValidateTokenResponseDto response= new ValidateTokenResponseDto();
+        if (optionalUserDto.isEmpty()){
+            response.setSessionStatus(SessionStatus.INVALID);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        response.setSessionStatus(SessionStatus.ACTIVE);
+        response.setUserDto(optionalUserDto.get());
+        return new ResponseEntity<>(response,HttpStatus.OK);
 
     }
 
@@ -53,7 +59,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(SignupRequestDto signupRequestDto) throws UserAlreadyExistsException {
+    public ResponseEntity<UserDto> signup(@RequestBody SignupRequestDto signupRequestDto) throws UserAlreadyExistsException {
         UserDto userDto= authService.signup(signupRequestDto.getEmail(), signupRequestDto.getPassword());
         return new ResponseEntity<>(userDto,HttpStatus.OK);
 

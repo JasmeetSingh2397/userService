@@ -5,6 +5,7 @@ import com.example.userservice.models.User;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,7 +13,7 @@ import java.util.Set;
 @Getter
 public class UserDto {
 
-    private Set<Role> roles;
+    private Set<Role> roles=new HashSet<>();
     private String email;
 
     public static UserDto from(User user){

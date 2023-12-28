@@ -2,10 +2,8 @@ package com.example.userservice.services;
 
 import com.example.userservice.dtos.LoginResponseDto;
 import com.example.userservice.dtos.UserDto;
-import com.example.userservice.exceptions.IncorrectPasswordException;
-import com.example.userservice.exceptions.InvalidSessionException;
-import com.example.userservice.exceptions.UserAlreadyExistsException;
-import com.example.userservice.exceptions.UserNotFoundException;
+import com.example.userservice.dtos.ValidateTokenResponseDto;
+import com.example.userservice.exceptions.*;
 import com.example.userservice.models.Role;
 import com.example.userservice.models.Session;
 import com.example.userservice.models.SessionStatus;
@@ -19,6 +17,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -30,11 +29,14 @@ import java.util.Set;
 public class AuthService {
 
     private UserRepository userRepository;
-    private BCryptPasswordEncoder bcryptPasswordEncoder;
+    private PasswordEncoder passwordEncoder;
     private SessionRepository sessionRepository;
 
-
-
+    public AuthService(UserRepository userRepository,SessionRepository sessionRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.sessionRepository = sessionRepository;
+    }
 
     public LoginResponseDto login(String email, String password) throws UserNotFoundException, IncorrectPasswordException, JsonProcessingException {
         Optional<User> optionalUser= userRepository.findByEmail(email);
@@ -43,7 +45,7 @@ public class AuthService {
 
         }
         User user= optionalUser.get();
-        if(!bcryptPasswordEncoder.matches(password, user.getPassword())){
+        if(!passwordEncoder.matches(password, user.getPassword())){
             throw new IncorrectPasswordException("Incorrect Password");
         }
 
@@ -79,16 +81,20 @@ public class AuthService {
 
 
     }
-    public SessionStatus validate(String token, long userId){
+    public Optional<UserDto> validate(String token, long userId){
         Optional<Session> optionalSession= sessionRepository.findByTokenAndUserId(token, userId);
         if (optionalSession.isEmpty()){
-            return SessionStatus.INVALID;
+            return Optional.empty();
         }
         Session session= optionalSession.get();
         if(!session.getSessionStatus().equals(SessionStatus.ACTIVE)){
-            return SessionStatus.EXPIRED;
+            return Optional.empty();
         }
-        return SessionStatus.ACTIVE;
+
+        User user = userRepository.findById(userId).get();
+
+
+        return Optional.of(UserDto.from(user));
 
 
 
@@ -111,9 +117,10 @@ public class AuthService {
         if(optionalUser.isPresent()){
             throw new UserAlreadyExistsException("User with email "+email+" already exists");
         }
+
         User user= new User();
         user.setEmail(email);
-        String encPassword= bcryptPasswordEncoder.encode(password);
+        String encPassword= passwordEncoder.encode(password);
         user.setPassword(encPassword);
         User savedUser= userRepository.save(user);
         return UserDto.from(savedUser);
