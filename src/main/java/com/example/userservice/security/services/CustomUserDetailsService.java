@@ -18,13 +18,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<User> optionalUser= userRepository.findByEmail(email);
-        if(optionalUser.isEmpty()){
-            throw new UsernameNotFoundException(email+" does not exist");
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByEmail(username);
+
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException(username + " doesn't exist.");
         }
-        User user= optionalUser.get();
-        return new CustomUserDetails(user);
+
+
+        return new CustomUserDetails(user.get());
     }
 }
+

@@ -8,13 +8,13 @@ import org.springframework.security.core.GrantedAuthority;
 @JsonDeserialize
 @NoArgsConstructor
 public class CustomGrantedAuthority implements GrantedAuthority {
-
-//    private Role role;
+    //    private Role role;
     private String authority;
 
     public CustomGrantedAuthority(Role role) {
         this.authority = role.getName();
     }
+
 
     @Override
     public String getAuthority() {
