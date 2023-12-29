@@ -76,7 +76,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(2)
+    @Order
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http
