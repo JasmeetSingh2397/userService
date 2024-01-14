@@ -38,79 +38,79 @@ public class AuthService {
         this.sessionRepository = sessionRepository;
     }
 
-    public LoginResponseDto login(String email, String password) throws UserNotFoundException, IncorrectPasswordException, JsonProcessingException {
-        Optional<User> optionalUser= userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()){
-            throw new UserNotFoundException("User with given email does not exist");
-
-        }
-        User user= optionalUser.get();
-        if(!passwordEncoder.matches(password, user.getPassword())){
-            throw new IncorrectPasswordException("Incorrect Password");
-        }
-
-        Key key= Keys.secretKeyFor(SignatureAlgorithm.HS256);
-        Set<Role> roles= user.getRoles();
-        ObjectMapper mapper = new ObjectMapper();
-        String rolesJson = mapper.writeValueAsString(roles);
-
-        JwtBuilder builder= Jwts.builder().
-                setHeaderParam("typ", "JWT").
-                setHeaderParam("alg", "HS256").
-                setSubject(""+user.getId()).
-                claim("roles", rolesJson).
-                setIssuedAt(new Date()).
-                setExpiration(new Date(System.currentTimeMillis()+60000));
-
-        String token= builder.signWith(key).compact();
-
-        Session session= new Session();
-        session.setToken(token);
-        session.setUser(user);
-        session.setCreatedAt(new Date());
-        session.setLastModifiedAt(new Date());
-        session.setSessionStatus(SessionStatus.ACTIVE);
-        sessionRepository.save(session);
-
-        LoginResponseDto loginResponseDto= new LoginResponseDto();
-        loginResponseDto.setUserDto(UserDto.from(user));
-        loginResponseDto.setToken(token);
-
-        return loginResponseDto;
-
-
-
-    }
-    public Optional<UserDto> validate(String token, long userId){
-        Optional<Session> optionalSession= sessionRepository.findByTokenAndUserId(token, userId);
-        if (optionalSession.isEmpty()){
-            return Optional.empty();
-        }
-        Session session= optionalSession.get();
-        if(!session.getSessionStatus().equals(SessionStatus.ACTIVE)){
-            return Optional.empty();
-        }
-
-        User user = userRepository.findById(userId).get();
-
-
-        return Optional.of(UserDto.from(user));
-
-
-
-    }
-
-    public void logout(String token, long userId) throws InvalidSessionException {
-
-        Optional<Session> optionalSession= sessionRepository.findByTokenAndUserId(token, userId);
-        if (optionalSession.isEmpty()){
-            throw new InvalidSessionException("Invalid Session");
-        }
-
-        Session session= optionalSession.get();
-        session.setSessionStatus(SessionStatus.LOGGED_OUT);
-        sessionRepository.save(session);
-    }
+//    public LoginResponseDto login(String email, String password) throws UserNotFoundException, IncorrectPasswordException, JsonProcessingException {
+//        Optional<User> optionalUser= userRepository.findByEmail(email);
+//        if (optionalUser.isEmpty()){
+//            throw new UserNotFoundException("User with given email does not exist");
+//
+//        }
+//        User user= optionalUser.get();
+//        if(!passwordEncoder.matches(password, user.getPassword())){
+//            throw new IncorrectPasswordException("Incorrect Password");
+//        }
+//
+//        Key key= Keys.secretKeyFor(SignatureAlgorithm.HS256);
+//        Set<Role> roles= user.getRoles();
+//        ObjectMapper mapper = new ObjectMapper();
+//        String rolesJson = mapper.writeValueAsString(roles);
+//
+//        JwtBuilder builder= Jwts.builder().
+//                setHeaderParam("typ", "JWT").
+//                setHeaderParam("alg", "HS256").
+//                setSubject(""+user.getId()).
+//                claim("roles", rolesJson).
+//                setIssuedAt(new Date()).
+//                setExpiration(new Date(System.currentTimeMillis()+60000));
+//
+//        String token= builder.signWith(key).compact();
+//
+//        Session session= new Session();
+//        session.setToken(token);
+//        session.setUser(user);
+//        session.setCreatedAt(new Date());
+//        session.setLastModifiedAt(new Date());
+//        session.setSessionStatus(SessionStatus.ACTIVE);
+//        sessionRepository.save(session);
+//
+//        LoginResponseDto loginResponseDto= new LoginResponseDto();
+//        loginResponseDto.setUserDto(UserDto.from(user));
+//        loginResponseDto.setToken(token);
+//
+//        return loginResponseDto;
+//
+//
+//
+//    }
+//    public Optional<UserDto> validate(String token, long userId){
+//        Optional<Session> optionalSession= sessionRepository.findByTokenAndUserId(token, userId);
+//        if (optionalSession.isEmpty()){
+//            return Optional.empty();
+//        }
+//        Session session= optionalSession.get();
+//        if(!session.getSessionStatus().equals(SessionStatus.ACTIVE)){
+//            return Optional.empty();
+//        }
+//
+//        User user = userRepository.findById(userId).get();
+//
+//
+//        return Optional.of(UserDto.from(user));
+//
+//
+//
+//    }
+//
+//    public void logout(String token, long userId) throws InvalidSessionException {
+//
+//        Optional<Session> optionalSession= sessionRepository.findByTokenAndUserId(token, userId);
+//        if (optionalSession.isEmpty()){
+//            throw new InvalidSessionException("Invalid Session");
+//        }
+//
+//        Session session= optionalSession.get();
+//        session.setSessionStatus(SessionStatus.LOGGED_OUT);
+//        sessionRepository.save(session);
+//    }
 
     public UserDto signup(String email, String password) throws UserAlreadyExistsException {
         Optional<User> optionalUser= userRepository.findByEmail(email);
