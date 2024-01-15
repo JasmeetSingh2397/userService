@@ -80,16 +80,37 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http
+                .csrf().disable()
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/auth/signup").permitAll()
+                        .requestMatchers("/users/{id}").permitAll()
+//                        .requestMatchers("/auth/login").authenticated()
                         .anyRequest().permitAll()
-                );
+                )
                 // Form login handles the redirect to the login page from the
                 // authorization server filter chain
-//                .formLogin(Customizer.withDefaults());
+//                .formLogin(form -> form
+//                        .loginPage("/auth/login")  // Set the login URL
+//                        .permitAll());
+                .formLogin(Customizer.withDefaults());
 
         return http.build();
     }
+//        http
+//                .authorizeHttpRequests((authorize) -> authorize
+//                        .requestMatchers("/auth/signup").permitAll()
+//                        .requestMatchers("/users/{id}").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                // Specify login URL and allow access without authentication
+//                .formLogin(form -> form
+//                        .loginPage("/login")  // Set the login URL
+//                        .permitAll())        // Allow access to login page without authentication
+//                .build();
+//
+//        return http.build();
+//    }
+
 
 //    @Bean
 //    public UserDetailsService userDetailsService() {
